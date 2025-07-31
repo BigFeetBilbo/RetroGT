@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mario 2</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #181818; color: #f5f5f5; margin: 0; padding: 0; }
+        header { background: #222; padding: 2rem 0; text-align: center; }
+        main { max-width: 800px; margin: 2rem auto; background: #232323; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); padding: 2rem; }
+        .game-img { width: 240px; height: 240px; object-fit: cover; border-radius: 16px; background: #111; display: block; margin: 0 auto 2rem auto; }
+        .game-title { font-size: 2rem; font-weight: bold; text-align: center; margin-bottom: 1rem; }
+        .game-console { color: #aaa; font-size: 1.2rem; text-align: center; margin-bottom: 1rem; }
+        .game-id { color: #888; font-size: 1rem; text-align: center; margin-bottom: 2rem; }
+        .back-link { display: block; text-align: center; margin-top: 2rem; color: #4caf50; text-decoration: none; font-weight: bold; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <a href="../Home.html" class="logo-link">
+                <img src="../../Images/Gameboy.svg.png" alt="Gameboy Logo" class="logo-header">
+            </a>
+            <nav class="nav-header">
+                <a href="../Games.html">Games</a>
+                <a href="../Consoles.html">Consoles</a>
+            </nav>
+        </div>
+    </header>
+    <style>
+    .header-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #222;
+        padding: 1rem 2rem;
+    }
+    .logo-header {
+        width: 60px;
+        height: auto;
+        display: block;
+    }
+    .logo-link {
+        display: flex;
+        align-items: center;
+    }
+    .nav-header {
+        display: flex;
+        gap: 2rem;
+    }
+    .nav-header a {
+        color: #f5f5f5;
+        text-decoration: none;
+        font-size: 1.1rem;
+        padding: 0.5rem 1.5rem;
+        border-radius: 5px;
+        background: #333;
+        transition: background 0.2s;
+    }
+    .nav-header a:hover {
+        background: #444;
+    }
+    </style>
+    <main>
+        <img src="../../Images/Gameboy.svg.png" alt="Mario 2" class="game-img" id="game-img">
+        <div class="game-title">Mario 2</div>
+        <div class="game-console">Console: NES</div>
+        <div class="game-id">Game ID: 7</div>
+        <a href="../Games.html" class="back-link">&larr; Back to Games</a>
+        <script>
+        // Fetch the image from RAWG using the game title
+        const title = document.querySelector('.game-title').textContent;
+        fetch(`http://localhost:3000/game-image?title=${encodeURIComponent(title)}`)
+          .then(res => res.json())
+          .then(data => {
+            const img = document.getElementById('game-img');
+            if (data.image) {
+              img.src = `http://localhost:3000/image-proxy?url=${encodeURIComponent(data.image)}`;
+            } else {
+              img.src = '../../Images/Gameboy.svg.png';
+            }
+          })
+          .catch(() => {
+            document.getElementById('game-img').src = '../../Images/Gameboy.svg.png';
+          });
+        </script>
+    </main>
+</body>
+</html>

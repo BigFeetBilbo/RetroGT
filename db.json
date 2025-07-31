@@ -1,0 +1,41 @@
+{
+  "games": [
+    {
+      "title": "Castlevania",
+      "console": "NES",
+      "id": 6
+    },
+    {
+      "title": "Mario 2",
+      "console": "NES",
+      "id": 7
+    },
+    {
+      "title": "Mario",
+      "console": "NES",
+      "id": 8
+    }
+  ],
+  "consoles": [
+    {
+      "id": 1,
+      "name": "Nitendo Game Boy"
+    },
+    {
+      "id": 2,
+      "name": "NES"
+    },
+    {
+      "name": "Super Nintendo (SNES)",
+      "id": 3
+    },
+    {
+      "name": "Super Nintendo (SNES)55",
+      "id": 4
+    },
+    {
+      "name": "GBC",
+      "id": 5
+    }
+  ]
+}

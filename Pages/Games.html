@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Games</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #181818; color: #f5f5f5; margin: 0; padding: 0; }
+        header { background: #222; padding: 2rem 0; text-align: center; }
+        header h1 { margin: 0; font-size: 2.5rem; letter-spacing: 2px; }
+        main { width: 100vw; margin: 2rem 0 0 0; background: #232323; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); padding: 2rem 0; }
+        #games-list { margin-left: 2rem; margin-right: 2rem; }
+        .game-img-big { width: 260px; height: 260px; object-fit: cover; border-radius: 18px; background: #111; }
+        .game-title-fun {
+          font-size: 2.2rem;
+          font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
+          font-weight: bold;
+          letter-spacing: 1px;
+          color: #ffe066;
+          text-shadow: 2px 2px 8px #222, 0 0 2px #fff;
+        }
+        @media (max-width: 700px) {
+          main { padding: 1rem 0; }
+          #games-list { margin-left: 0.5rem; margin-right: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header.html: Shared header for all pages -->
+    <header>
+        <div class="header-container">
+            <a href="Home.html" class="logo-link">
+            <img src="../Images/Gameboy.svg.png" alt="Gameboy Logo" class="logo-header">
+            </a>
+            <nav class="nav-header">
+                <a href="Games.html">Games</a>
+                <a href="Consoles.html">Consoles</a>
+            </nav>
+        </div>
+    </header>
+    <style>
+    .header-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #222;
+        padding: 1rem 2rem;
+    }
+    .logo-header {
+        width: 60px;
+        height: auto;
+        display: block;
+    }
+    .logo-link {
+        display: flex;
+        align-items: center;
+    }
+    .nav-header {
+        display: flex;
+        gap: 2rem;
+    }
+    .nav-header a {
+        color: #f5f5f5;
+        text-decoration: none;
+        font-size: 1.1rem;
+        padding: 0.5rem 1.5rem;
+        border-radius: 5px;
+        background: #333;
+        transition: background 0.2s;
+    }
+    .nav-header a:hover {
+        background: #444;
+    }
+    </style>
+    <main>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;width:100%;">
+        <h1 style="text-align:left; margin-top:0; margin-left:2rem;">Games</h1>
+        <form id="add-game-form" style="max-width:500px;margin:2rem 2rem 0 0;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;justify-content:flex-end;background:#232323;padding:1rem 2rem;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+          <input id="game-title" type="text" placeholder="Game Title" required style="flex:2;min-width:120px;padding:0.5rem;border-radius:5px;border:none;outline:none;">
+          <select id="game-console" required style="flex:1;min-width:100px;padding:0.5rem;border-radius:5px;border:none;outline:none;background:#fff;color:#222;">
+            <option value="" disabled selected>Select Console</option>
+          </select>
+          <button type="submit" style="padding:0.5rem 1.5rem;border-radius:5px;border:none;background:#4caf50;color:#fff;font-weight:bold;cursor:pointer;">Add Game</button>
+        </form>
+      </div>
+      <div id="games-list"></div>
+      <script>
+        function populateConsoleDropdown() {
+          fetch('http://localhost:3000/consoles')
+            .then(res => res.json())
+            .then(consoles => {
+              const select = document.getElementById('game-console');
+              select.innerHTML = '<option value="" disabled selected>Select Console</option>';
+              consoles.forEach(c => {
+                select.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+              });
+            });
+        }
+
+        function loadGames() {
+          fetch('http://localhost:3000/games')
+            .then(res => res.json())
+            .then(games => {
+              const list = document.getElementById('games-list');
+              if (games.length === 0) {
+                list.innerHTML = '<div style="text-align:center;">No games found.</div>';
+              } else {
+                list.innerHTML = games.map((g, idx) => `
+                  <div id="game-card-${idx}" style='background:#232323;margin-bottom:1.5rem;padding:1.5rem 2rem;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.2);display:flex;align-items:center;gap:2.5rem;'>
+                    <img src='' alt='${g.title}' class='game-img-big' id='game-img-${idx}'>
+                    <div style="flex:1;">
+                      <div style='display:flex;align-items:center;justify-content:space-between;gap:1rem;'>
+                        <a href="/Games/${g.title.replace(/[^a-zA-Z0-9]+/g, '_')}.html" class="game-title-fun">${g.title}</a>
+                        <button class="delete-game-btn" data-id="${g.id}" style="margin-left:auto;background:#e74c3c;color:#fff;border:none;padding:0.4rem 1rem;border-radius:5px;cursor:pointer;font-size:1rem;">Delete</button>
+                      </div>
+                      <div style='color:#aaa;font-size:1.1rem;'>Console: ${g.console}</div>
+                      <div style='color:#888;font-size:1rem;margin-top:0.5rem;'>Game ID: ${g.id}</div>
+                    </div>
+                  </div>
+                `).join('');
+                // Fetch images for each game
+                games.forEach((g, idx) => {
+                  const img = document.getElementById('game-img-' + idx);
+                  // Fetch image from backend (RAWG proxy) with just the title
+                  fetch(`http://localhost:3000/game-image?title=${encodeURIComponent(g.title)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                      if (data.image) {
+                        const proxiedUrl = `http://localhost:3000/image-proxy?url=${encodeURIComponent(data.image)}`;
+                        img.src = proxiedUrl;
+                        img.onerror = function() {
+                          img.style.border = '3px solid red';
+                          img.title = 'Failed to load image';
+                          img.src = '../Images/Gameboy.svg.png';
+                        };
+                      } else {
+                        img.src = '../Images/Gameboy.svg.png';
+                      }
+                    })
+                    .catch(() => {
+                      img.src = '../Images/Gameboy.svg.png';
+                    });
+                });
+                // Add event listeners for delete buttons
+                document.querySelectorAll('.delete-game-btn').forEach(btn => {
+                  btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    if (confirm('Are you sure you want to delete this game?')) {
+                      fetch(`http://localhost:3000/games/${id}`, { method: 'DELETE' })
+                        .then(res => {
+                          if (!res.ok) throw new Error('Failed to delete game');
+                          return res.json();
+                        })
+                        .then(() => loadGames())
+                        .catch(() => alert('Could not delete game.'));
+                    }
+                  });
+                });
+              }
+            })
+            .catch(() => {
+              document.getElementById('games-list').innerHTML = '<div style="text-align:center;">Could not load games.</div>';
+            });
+        }
+        populateConsoleDropdown();
+        loadGames();
+        document.getElementById('add-game-form').addEventListener('submit', function(e) {
+          e.preventDefault();
+          const title = document.getElementById('game-title').value.trim();
+          const consoleName = document.getElementById('game-console').value;
+          if (!title || !consoleName) return;
+          fetch('http://localhost:3000/games', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, console: consoleName })
+          })
+          .then(res => {
+            if (!res.ok) throw new Error('Failed to add game');
+            return res.json();
+          })
+          .then(() => {
+            document.getElementById('game-title').value = '';
+            document.getElementById('game-console').selectedIndex = 0;
+            loadGames();
+          })
+          .catch(() => alert('Could not add game.'));
+        });
+        </script>
+    </main>
+</body>
+</html>

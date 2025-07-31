@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consoles</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #181818; color: #f5f5f5; margin: 0; padding: 0; }
+        header { background: #222; padding: 2rem 0; text-align: center; }
+        header h1 { margin: 0; font-size: 2.5rem; letter-spacing: 2px; }
+        main { max-width: 800px; margin: 2rem auto; background: #232323; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); padding: 2rem; }
+    </style>
+</head>
+<body>
+    <!-- Header.html: Shared header for all pages -->
+    <header>
+        <div class="header-container">
+            <a href="Home.html" class="logo-link">
+            <img src="../Images/Gameboy.svg.png" alt="Gameboy Logo" class="logo-header">
+            </a>
+            <nav class="nav-header">
+                <a href="Games.html">Games</a>
+                <a href="Consoles.html">Consoles</a>
+            </nav>
+        </div>
+    </header>
+    <style>
+    .header-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #222;
+        padding: 1rem 2rem;
+    }
+    .logo-header {
+        width: 60px;
+        height: auto;
+        display: block;
+    }
+    .logo-link {
+        display: flex;
+        align-items: center;
+    }
+    .nav-header {
+        display: flex;
+        gap: 2rem;
+    }
+    .nav-header a {
+        color: #f5f5f5;
+        text-decoration: none;
+        font-size: 1.1rem;
+        padding: 0.5rem 1.5rem;
+        border-radius: 5px;
+        background: #333;
+        transition: background 0.2s;
+    }
+    .nav-header a:hover {
+        background: #444;
+    }
+    </style>
+    <main>
+        <h1 style="text-align:center; margin-top:0;">Consoles</h1>
+        <form id="add-console-form" style="max-width:500px;margin:2rem auto 1rem auto;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;justify-content:center;background:#232323;padding:1rem 2rem;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+          <input id="console-name" type="text" placeholder="Console Name" required style="flex:2;min-width:120px;padding:0.5rem;border-radius:5px;border:none;outline:none;">
+          <button type="submit" style="padding:0.5rem 1.5rem;border-radius:5px;border:none;background:#4caf50;color:#fff;font-weight:bold;cursor:pointer;">Add Console</button>
+        </form>
+        <div id="consoles-list"></div>
+        <script>
+        function loadConsoles() {
+          fetch('http://localhost:3000/consoles')
+            .then(res => res.json())
+            .then(consoles => {
+              const list = document.getElementById('consoles-list');
+              if (consoles.length === 0) {
+                list.innerHTML = '<div style="text-align:center;">No consoles found.</div>';
+              } else {
+                list.innerHTML = consoles.map((c, idx) => `
+                  <div id="console-card-${idx}" style='position:relative;background:#232323;margin-bottom:1.5rem;padding:0;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,0.2);overflow:hidden;min-height:160px;max-width:480px;display:flex;align-items:center;justify-content:flex-start;'>
+                    <img src='' alt='${c.name}' id='console-img-${idx}' style='position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;opacity:0.18;z-index:1;'>
+                    <div style='position:relative;z-index:2;width:100%;display:flex;align-items:center;justify-content:center;'>
+                      <div style='font-size:1.7rem;font-weight:bold;text-align:center;padding:2.5rem 1rem;width:100%;'>
+                        <a href="../Consoles/${c.name.replace(/[^a-zA-Z0-9]+/g, '_')}.html" style="color:#ffe066;text-shadow:2px 2px 8px #222,0 0 2px #fff;font-family:'Comic Sans MS','Comic Sans',cursive,sans-serif;text-decoration:underline;">${c.name}</a>
+                      </div>
+                    </div>
+                  </div>
+                `).join('');
+                // Fetch images for each console using backend API and proxy
+                consoles.forEach((c, idx) => {
+                  const img = document.getElementById('console-img-' + idx);
+                  fetch(`http://localhost:3000/console-image?title=${encodeURIComponent(c.name)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                      if (data.image) {
+                        const proxiedUrl = `http://localhost:3000/image-proxy?url=${encodeURIComponent(data.image)}`;
+                        img.src = proxiedUrl;
+                        img.onerror = function() {
+                          img.style.border = '3px solid red';
+                          img.title = 'Failed to load image';
+                          img.src = '../Images/Gameboy.svg.png';
+                        };
+                      } else {
+                        img.src = '../Images/Gameboy.svg.png';
+                      }
+                    })
+                    .catch(() => {
+                      img.src = '../Images/Gameboy.svg.png';
+                    });
+                });
+              }
+            })
+            .catch(() => {
+              document.getElementById('consoles-list').innerHTML = '<div style="text-align:center;">Could not load consoles.</div>';
+            });
+        }
+        loadConsoles();
+        document.getElementById('add-console-form').addEventListener('submit', function(e) {
+          e.preventDefault();
+          const name = document.getElementById('console-name').value.trim();
+          if (!name) return;
+          fetch('http://localhost:3000/consoles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+          })
+          .then(res => {
+            if (!res.ok) throw new Error('Failed to add console');
+            return res.json();
+          })
+          .then(() => {
+            document.getElementById('console-name').value = '';
+            loadConsoles();
+          })
+          .catch(() => alert('Could not add console.'));
+        });
+        // ...existing code...
+        </script>
+    </main>
+</body>
+</html>
